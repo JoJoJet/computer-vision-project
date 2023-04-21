@@ -59,8 +59,7 @@ while(True):
 
     # Draw the bounding boxes in the image.
     for (xA, yA, xB, yB) in boxes:
-        cv2.rectangle(frame, (xA, yA), (xB, yB),
-                          (0, 255, 0), 2)
+        cv2.rectangle(frame, (xA, yA), (xB, yB), (0, 255, 0), 2)
     
     if current_state == STATE_SCAN:
         now = datetime.now()

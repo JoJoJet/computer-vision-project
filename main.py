@@ -48,11 +48,10 @@ while(True):
 
     # Resize and convert to grayscale for faster detection.
     frame = cv2.resize(frame, frame_size)
-    gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 
     # Runs HOG to detect any potential humans.
     # This returns a bounding box for each potential human.
-    boxes, weights = hog.detectMultiScale(gray, winStride=(8,8) )
+    boxes, weights = hog.detectMultiScale(frame, winStride=(8,8) )
     boxes = np.array([[x, y, x + w, y + h] for (x, y, w, h) in boxes])
 
     # Draw the bounding boxes in the image.

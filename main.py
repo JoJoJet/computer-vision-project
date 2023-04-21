@@ -84,6 +84,9 @@ while(True):
     # We saw a person last frame. See if they're still there.
     elif current_state == STATE_ALERT:
         out.write(frame.astype('uint8'))
+        
+        # Draw a recording icon.
+        cv2.circle(frame, (15,15), 10, (0,0,255), -1)
     
         if len(boxes) != 0:
             print("still maybe a person")
@@ -94,6 +97,9 @@ while(True):
     # We just lost sight of a person. See if we can find them again.
     elif current_state == STATE_LOST:
         out.write(frame.astype('uint8'))
+        
+        # Draw a recording icon.
+        cv2.circle(frame, (15,15), 10, (0,0,255), -1)
         
         lost_length += 1
         

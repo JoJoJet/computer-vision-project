@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from datetime import datetime
 
 hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
@@ -10,20 +11,20 @@ cv2.startWindowThread()
 cap = cv2.VideoCapture(0)
 
 
+fps = 15.
+
 # Stores past frames for a short period of time.
 # If a human is detected, the saved video will include
 # any frames still stored in the buffer.
 frame_buffer = []
 
-# The length of the frame buffer in seconds.
-frame_buffer_length = 10
+# The length of the frame buffer in frames.
+frame_buffer_length = int(10 * fps)
 
-# the output will be written to output.avi
-out = cv2.VideoWriter(
-    'output.avi',
-    cv2.VideoWriter_fourcc(*'MJPG'),
-    15.,
-    (640,480))
+frame_size = (640, 480)
+
+# Video writer used to save files.
+out = None
     
 # The normal state of the application.
 STATE_SCAN = "scanning"
@@ -35,6 +36,10 @@ STATE_ALERT = "alert"
 # we re-detect them.
 STATE_LOST = "lost"
 
+# If we are in STATE_LOST, this tracks how many frames
+# we've lost sight of the person for.
+lost_length = 0
+
 current_state = STATE_SCAN
     
 while(True):
@@ -42,7 +47,7 @@ while(True):
     ret, frame = cap.read()
 
     # Resize and convert to grayscale for faster detection.
-    frame = cv2.resize(frame, (640, 480))
+    frame = cv2.resize(frame, frame_size)
     gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 
     # Runs HOG to detect any potential humans.
@@ -59,25 +64,51 @@ while(True):
     #out.write(frame.astype('uint8'))
     
     if current_state == STATE_SCAN:
+        # Add the current frame to the buffer.
+        frame_buffer.append(frame)
+    
         if len(boxes) != 0:
             current_state = STATE_ALERT
             print("Maybe a person?")
+            
+            file_name = datetime.now().strftime("Recording-%d-%m-%y--%H-%M-%S.avi")
+            print(file_name)
+            out = cv2.VideoWriter(
+                file_name,
+                cv2.VideoWriter_fourcc(*'MJPG'),
+                fps,
+                frame_size)
+            for frame in frame_buffer:
+                out.write(frame.astype('uint8'))
+            frame_buffer.clear()
     # We saw a person last frame. See if they're still there.
     elif current_state == STATE_ALERT:
+        out.write(frame.astype('uint8'))
+    
         if len(boxes) != 0:
             print("still maybe a person")
         else:
             current_state = STATE_LOST
+            lost_length = 0
             print("We lost sight of the person.")
     # We just lost sight of a person. See if we can find them again.
     elif current_state == STATE_LOST:
+        out.write(frame.astype('uint8'))
+        
+        lost_length += 1
+        
         if len(boxes) != 0:
             current_state = STATE_ALERT
             print("We found the person again!")
+        elif lost_length > int(5 * fps):
+            current_state = STATE_SCAN
+            out.release()
+            out = None
+            print("We're assuming the person is gone now.")
         else:
+            lost_length += 1
             print("Looking for the person again...")
     
-    frame_buffer.append(frame)
     
     # Display the resulting frame
     cv2.imshow('frame',frame)
@@ -87,7 +118,8 @@ while(True):
 # When everything done, release the capture
 cap.release()
 # and release the output
-out.release()
+if out != None:
+    out.release()
 # finally, close the window
 cv2.destroyAllWindows()
 cv2.waitKey(1)

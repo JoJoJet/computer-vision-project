@@ -59,9 +59,6 @@ while(True):
         cv2.rectangle(frame, (xA, yA), (xB, yB),
                           (0, 255, 0), 2)
     
-    # Write the output video 
-    #out.write(frame.astype('uint8'))
-    
     if current_state == STATE_SCAN:
         # Add the current frame to the buffer.
         frame_buffer.append(frame)

@@ -18,8 +18,11 @@ fps = 15.
 # any frames still stored in the buffer.
 frame_buffer = []
 
+# Timestamps corresponding to each frame in `frame_buffer`.
+time_buffer = []
+
 # The length of the frame buffer in frames.
-frame_buffer_length = int(10 * fps)
+frame_buffer_length = 10
 
 frame_size = (640, 480)
 
@@ -36,9 +39,9 @@ STATE_ALERT = "alert"
 # we re-detect them.
 STATE_LOST = "lost"
 
-# If we are in STATE_LOST, this tracks how many frames
-# we've lost sight of the person for.
-lost_length = 0
+# If we are in STATE_LOST, this keeps track of when
+# we entered the current state.
+entered_lost = None
 
 current_state = STATE_SCAN
     
@@ -60,14 +63,17 @@ while(True):
                           (0, 255, 0), 2)
     
     if current_state == STATE_SCAN:
+        now = datetime.now()
+    
         # Add the current frame to the buffer.
         frame_buffer.append(frame)
+        time_buffer.append(datetime.now())
     
         if len(boxes) != 0:
             current_state = STATE_ALERT
             print("Maybe a person?")
             
-            file_name = datetime.now().strftime("Recording-%d-%m-%y--%H-%M-%S.avi")
+            file_name = now.strftime("Recording-%d-%m-%y--%H-%M-%S.avi")
             print(file_name)
             out = cv2.VideoWriter(
                 file_name,
@@ -77,6 +83,13 @@ while(True):
             for frame in frame_buffer:
                 out.write(frame.astype('uint8'))
             frame_buffer.clear()
+            time_buffer.clear()
+            
+        # Remove old frames from the buffer.
+        while len(time_buffer) > 0 and (now - time_buffer[0]).seconds > 10:
+            print("Removing an old frame...")
+            frame_buffer.pop(0)
+            time_buffer.pop(0)
     # We saw a person last frame. See if they're still there.
     elif current_state == STATE_ALERT:
         out.write(frame.astype('uint8'))
@@ -88,7 +101,7 @@ while(True):
             print("still maybe a person")
         else:
             current_state = STATE_LOST
-            lost_length = 0
+            entered_lost = datetime.now()
             print("We lost sight of the person.")
     # We just lost sight of a person. See if we can find them again.
     elif current_state == STATE_LOST:
@@ -97,18 +110,15 @@ while(True):
         # Draw a recording icon.
         cv2.circle(frame, (15,15), 10, (0,0,255), -1)
         
-        lost_length += 1
-        
         if len(boxes) != 0:
             current_state = STATE_ALERT
             print("We found the person again!")
-        elif lost_length > int(5 * fps):
+        elif (datetime.now() - entered_lost).seconds > 5:
             current_state = STATE_SCAN
             out.release()
             out = None
             print("We're assuming the person is gone now.")
         else:
-            lost_length += 1
             print("Looking for the person again...")
     
     

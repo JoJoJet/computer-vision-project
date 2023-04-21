@@ -68,12 +68,14 @@ while(True):
         frame_buffer.append(frame)
         time_buffer.append(datetime.now())
     
+        # If we detected a person, transition to the alert state.
         if len(boxes) != 0:
             current_state = STATE_ALERT
             print("Maybe a person?")
             
+            # Start a recording. Save the current frame buffer,
+            # to give the recording more context when viewed.
             file_name = now.strftime("Recording-%d-%m-%y--%H-%M-%S.avi")
-            print(file_name)
             out = cv2.VideoWriter(
                 file_name,
                 cv2.VideoWriter_fourcc(*'MJPG'),

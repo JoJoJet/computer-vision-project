@@ -51,7 +51,7 @@ while(True):
 
     # Runs HOG to detect any potential humans.
     # This returns a bounding box for each potential human.
-    boxes, weights = hog.detectMultiScale(frame, winStride=(4,4))
+    boxes, weights = hog.detectMultiScale(frame, winStride=(6,6))
     boxes = np.array([[x, y, x + w, y + h] for (x, y, w, h) in boxes])
 
     # Draw the bounding boxes in the image.

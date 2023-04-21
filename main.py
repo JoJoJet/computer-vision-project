@@ -6,7 +6,7 @@ hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
 cv2.startWindowThread()
 
-# open webcam video stream
+# Open the webcam.
 cap = cv2.VideoCapture(0)
 
 # the output will be written to output.avi
@@ -18,22 +18,20 @@ out = cv2.VideoWriter(
     
     
 while(True):
-    # Capture frame-by-frame
+    # Capture the next frame from the webcam.
     ret, frame = cap.read()
 
-    # resizing for faster detection
+    # Resize and convert to grayscale for faster detection.
     frame = cv2.resize(frame, (640, 480))
-    # using a greyscale picture, also for faster detection
     gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 
-    # detect people in the image
-    # returns the bounding boxes for the detected objects
+    # Runs HOG to detect any potential humans.
+    # This returns a bounding box for each potential human.
     boxes, weights = hog.detectMultiScale(gray, winStride=(8,8) )
-
     boxes = np.array([[x, y, x + w, y + h] for (x, y, w, h) in boxes])
 
+    # Draw the bounding boxes in the image.
     for (xA, yA, xB, yB) in boxes:
-        # display the detected boxes in the colour picture
         cv2.rectangle(frame, (xA, yA), (xB, yB),
                           (0, 255, 0), 2)
     

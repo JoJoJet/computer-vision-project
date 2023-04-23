@@ -30,21 +30,23 @@ frame_size = (640, 480)
 # Video writer used to save files.
 out = None
     
-# The normal state of the application.
-STATE_SCAN = "scanning"
-# We may have detected a person. Write the frames to file.
-STATE_ALERT = "alert"
-# We lost sight of a person. We dont' know if they're really gone
-# or if they just stopped being detected.
-# We should keep writing to the video file for a while in case
-# we re-detect them.
-STATE_LOST = "lost"
+class State:
+    # The normal state of the application.
+    SCAN = "scanning"
+    # We may have detected a person. Write the frames to file.
+    ALERT = "alert"
+    # We lost sight of a person. We dont' know if they're really gone
+    # or if they just stopped being detected.
+    # We should keep writing to the video file for a while in case
+    # we re-detect them.
+    LOST = "lost"
 
-# If we are in STATE_LOST, this keeps track of when
+
+# If we are in State.LOST, this keeps track of when
 # we entered the current state.
 entered_lost = None
 
-current_state = STATE_SCAN
+current_state = State.SCAN
     
 while(True):
     # Capture the next frame from the webcam.
@@ -81,61 +83,63 @@ while(True):
     for (x1, y1, x2, y2) in suppressed:
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 50, 0), 2)
     
-    if current_state == STATE_SCAN:
-        now = datetime.now()
-    
-        # Add the current frame to the buffer.
-        frame_buffer.append(frame)
-        time_buffer.append(datetime.now())
-    
-        # If we detected a person, transition to the alert state.
-        if len(boxes) != 0:
-            current_state = STATE_ALERT
+    match current_state:
+        case State.SCAN:
+            now = datetime.now()
+        
+            # Add the current frame to the buffer.
+            frame_buffer.append(frame)
+            time_buffer.append(datetime.now())
+        
+            # If we detected a person, transition to the alert state.
+            if len(boxes) != 0:
+                current_state = State.ALERT
+                
+                # Start a recording. Save the current frame buffer,
+                # to give the recording more context when viewed.
+                file_name = now.strftime("Recording-%d-%m-%y--%H-%M-%S.avi")
+                out = cv2.VideoWriter(
+                    file_name,
+                    cv2.VideoWriter_fourcc(*'MJPG'),
+                    fps,
+                    frame_size)
+                for frame in frame_buffer:
+                    out.write(frame.astype('uint8'))
+                frame_buffer.clear()
+                time_buffer.clear()
+                
+            # Remove old frames from the buffer.
+            while len(time_buffer) > 0 and (now - time_buffer[0]).seconds > 10:
+                print("Removing an old frame...")
+                frame_buffer.pop(0)
+                time_buffer.pop(0)
             
-            # Start a recording. Save the current frame buffer,
-            # to give the recording more context when viewed.
-            file_name = now.strftime("Recording-%d-%m-%y--%H-%M-%S.avi")
-            out = cv2.VideoWriter(
-                file_name,
-                cv2.VideoWriter_fourcc(*'MJPG'),
-                fps,
-                frame_size)
-            for frame in frame_buffer:
-                out.write(frame.astype('uint8'))
-            frame_buffer.clear()
-            time_buffer.clear()
+        # We saw a person last frame. See if they're still there.
+        case State.ALERT:
+            out.write(frame.astype('uint8'))
             
-        # Remove old frames from the buffer.
-        while len(time_buffer) > 0 and (now - time_buffer[0]).seconds > 10:
-            print("Removing an old frame...")
-            frame_buffer.pop(0)
-            time_buffer.pop(0)
-    # We saw a person last frame. See if they're still there.
-    elif current_state == STATE_ALERT:
-        out.write(frame.astype('uint8'))
+            # Draw a filled recording icon.
+            cv2.circle(frame, (15,15), 10, (0,0,255), -1)
         
-        # Draw a filled recording icon.
-        cv2.circle(frame, (15,15), 10, (0,0,255), -1)
-    
-        if len(boxes) != 0:
-            print("still maybe a person")
-        else:
-            current_state = STATE_LOST
-            entered_lost = datetime.now()
-    # We just lost sight of a person. See if we can find them again.
-    elif current_state == STATE_LOST:
-        out.write(frame.astype('uint8'))
+            if len(boxes) != 0:
+                print("still maybe a person")
+            else:
+                current_state = State.LOST
+                entered_lost = datetime.now()
         
-        # Draw a hollow recording icon.
-        cv2.circle(frame, (15,15), 10, (0,0,255), 3)
-        
-        if len(boxes) != 0:
-            current_state = STATE_ALERT
-        elif (datetime.now() - entered_lost).seconds > 5:
-            current_state = STATE_SCAN
-            out.release()
-            out = None
-    
+        # We just lost sight of a person. See if we can find them again.
+        case State.LOST:
+            out.write(frame.astype('uint8'))
+            
+            # Draw a hollow recording icon.
+            cv2.circle(frame, (15,15), 10, (0,0,255), 3)
+            
+            if len(boxes) != 0:
+                current_state = State.ALERT
+            elif (datetime.now() - entered_lost).seconds > 5:
+                current_state = State.SCAN
+                out.release()
+                out = None
     
     # Display the resulting frame
     cv2.imshow('frame',frame)

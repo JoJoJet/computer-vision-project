@@ -57,11 +57,13 @@ while(True):
     # This returns a bounding box for each potential human.
     boxes, weights = hog.detectMultiScale(frame, winStride=(8,8), scale=1.01)
     boxes = [[x, y, x + w, y + h] for (x, y, w, h) in boxes]
-    boxes, weights = non_max_suppression(boxes, list(weights))
+    boxes, weights, suppressed = non_max_suppression(boxes, list(weights))
 
     # Draw the bounding boxes in the image.
     for (xA, yA, xB, yB) in boxes:
         cv2.rectangle(frame, (xA, yA), (xB, yB), (0, 255, 0), 2)
+    for (xA, yA, xB, yB) in suppressed:
+        cv2.rectangle(frame, (xA, yA), (xB, yB), (0, 50, 0), 2)
     
     if current_state == STATE_SCAN:
         now = datetime.now()

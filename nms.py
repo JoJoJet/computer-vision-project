@@ -5,6 +5,8 @@ def non_max_suppression(boxes, weights, iou_threshold=0.5):
     keep = []
     keep_weights = []
     
+    suppressed = []
+    
     assert(len(boxes) == len(weights))
     while len(boxes) > 0:
         # Remove the bounding box with the hightest confidence value.
@@ -15,14 +17,16 @@ def non_max_suppression(boxes, weights, iou_threshold=0.5):
         keep_weights.append(s_c)
         
         # Suppress any bounding boxes with a significant overlap.
-        for i, (t, t_c) in enumerate(zip(boxes, weights)):
+        for i, t in enumerate(boxes):
             iou = intersection_over_union(s, t)
             if iou > iou_threshold:
                 boxes.pop(i)
                 weights.pop(i)
+                suppressed.append(t)
+                
     
         
-    return keep, keep_weights
+    return keep, keep_weights, suppressed
 
 def intersection_over_union(s, t):
     s_x1, s_y1, s_x2, s_y2 = s

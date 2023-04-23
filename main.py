@@ -58,6 +58,19 @@ while(True):
     boxes, weights = hog.detectMultiScale(frame, winStride=(8,8), scale=1.01)
     boxes = [[x, y, x + w, y + h] for (x, y, w, h) in boxes]
     boxes, weights, suppressed = non_max_suppression(boxes, list(weights))
+    
+    # Prune any boxes floating above the ground
+    # (this depends heavily on the camera angle and environment,
+    # and should be tuneable).
+    # Ideally we could mathematically estimate the distance from the ground
+    # in a more sophisticated way.
+    for i, (x1, y1, x2, y2) in enumerate(boxes):
+        # As y increases, we move further down the image.
+        y = max(y1, y2)
+        if y < frame_size[1] / 2:
+            boxes.pop(i)
+            weights.pop(i)
+            suppressed.append([x1, y1, x2, y2])
 
     # Draw the bounding boxes in the image.
     for (xA, yA, xB, yB), c in zip(boxes, weights):

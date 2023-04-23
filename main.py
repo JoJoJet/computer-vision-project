@@ -95,7 +95,7 @@ while(True):
     elif current_state == STATE_ALERT:
         out.write(frame.astype('uint8'))
         
-        # Draw a recording icon.
+        # Draw a filled recording icon.
         cv2.circle(frame, (15,15), 10, (0,0,255), -1)
     
         if len(boxes) != 0:
@@ -108,8 +108,8 @@ while(True):
     elif current_state == STATE_LOST:
         out.write(frame.astype('uint8'))
         
-        # Draw a recording icon.
-        cv2.circle(frame, (15,15), 10, (0,0,255), -1)
+        # Draw a hollow recording icon.
+        cv2.circle(frame, (15,15), 10, (0,0,255), 3)
         
         if len(boxes) != 0:
             current_state = STATE_ALERT

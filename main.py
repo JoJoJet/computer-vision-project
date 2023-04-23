@@ -66,8 +66,7 @@ while(True):
     # in a more sophisticated way.
     for i, (x1, y1, x2, y2) in enumerate(boxes):
         # As y increases, we move further down the image.
-        y = max(y1, y2)
-        if y < frame_size[1] / 2:
+        if y2 < frame_size[1] / 2:
             boxes.pop(i)
             weights.pop(i)
             suppressed.append([x1, y1, x2, y2])

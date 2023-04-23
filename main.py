@@ -64,6 +64,8 @@ while(True):
         cv2.rectangle(frame, (xA, yA), (xB, yB), (0, 255, 0), 2)
         cv2.putText(frame, f'{c:.3f}', (xA, yA), cv2.FONT_HERSHEY_SIMPLEX,
             0.5, (0, 255, 0), 1, cv2.LINE_AA)
+    # Draw the bounding boxes that have been suppressed.
+    # This is mainly just to ensure that non-max suppression works.
     for (xA, yA, xB, yB) in suppressed:
         cv2.rectangle(frame, (xA, yA), (xB, yB), (0, 50, 0), 2)
     

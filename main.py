@@ -71,7 +71,6 @@ while(True):
         # If we detected a person, transition to the alert state.
         if len(boxes) != 0:
             current_state = STATE_ALERT
-            print("Maybe a person?")
             
             # Start a recording. Save the current frame buffer,
             # to give the recording more context when viewed.
@@ -103,7 +102,6 @@ while(True):
         else:
             current_state = STATE_LOST
             entered_lost = datetime.now()
-            print("We lost sight of the person.")
     # We just lost sight of a person. See if we can find them again.
     elif current_state == STATE_LOST:
         out.write(frame.astype('uint8'))
@@ -113,14 +111,10 @@ while(True):
         
         if len(boxes) != 0:
             current_state = STATE_ALERT
-            print("We found the person again!")
         elif (datetime.now() - entered_lost).seconds > 5:
             current_state = STATE_SCAN
             out.release()
             out = None
-            print("We're assuming the person is gone now.")
-        else:
-            print("Looking for the person again...")
     
     
     # Display the resulting frame

@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from datetime import datetime
+from nms import non_max_suppression
 
 hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
@@ -55,7 +56,8 @@ while(True):
     # Runs HOG to detect any potential humans.
     # This returns a bounding box for each potential human.
     boxes, weights = hog.detectMultiScale(frame, winStride=(8,8), scale=1.01)
-    boxes = np.array([[x, y, x + w, y + h] for (x, y, w, h) in boxes])
+    boxes = [[x, y, x + w, y + h] for (x, y, w, h) in boxes]
+    boxes, weights = non_max_suppression(boxes, list(weights))
 
     # Draw the bounding boxes in the image.
     for (xA, yA, xB, yB) in boxes:

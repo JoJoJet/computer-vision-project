@@ -8,7 +8,7 @@ hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
 sift = cv2.SIFT_create(400)
-template_image = cv2.imread('template_image.jpg')
+template_image = cv2.imread('template_image.png')
 template_image = cv2.cvtColor(template_image, cv2.COLOR_BGR2GRAY)
 
 cv2.startWindowThread()

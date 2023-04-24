@@ -8,14 +8,60 @@ hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
 sift = cv2.SIFT_create(400)
-template_image = cv2.imread('template_image.jpg')
-template_image = cv2.cvtColor(template_image, cv2.COLOR_BGR2GRAY)
 
 cv2.startWindowThread()
 
 # Open the webcam.
 cap = cv2.VideoCapture(0)
 
+frame_size = (640, 480)
+
+select_region = True;
+region_a = None
+region_b = None
+current_mouse_position = None
+
+def select_region(event,x,y,flags,param):
+    global region_a, region_b, select_region, current_mouse_position
+    if event == cv2.EVENT_MOUSEMOVE:
+        current_mouse_position = (x,y)
+    if event == cv2.EVENT_LBUTTONDOWN:
+        if region_a == None:
+            region_a = (x,y)
+        elif region_b == None:
+            region_b = (x,y)
+            select_region = False
+
+def order_points(a,b):
+    x1,x2 = sorted([a[0],b[0]])
+    y1,y2 = sorted([a[1],b[1]])
+    return (x1,y1), (x2,y2)
+
+cv2.namedWindow('frame')
+cv2.setMouseCallback('frame', select_region)
+
+# Allow the user to select a region that will be monitored.
+while(select_region):
+    ret, frame = cap.read()
+    frame = cv2.resize(frame, frame_size)
+    
+    if current_mouse_position != None:
+        if region_a != None:
+            cv2.rectangle(frame,region_a,current_mouse_position,(200,200,200),2)
+    
+    cv2.imshow('frame', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+        
+assert(region_a != None)
+assert(region_b != None)
+region_a, region_b = order_points(region_a, region_b)
+
+# Find a template image by cropping out the region the user selected.
+_, template_image = cap.read()
+template_image = cv2.cvtColor(template_image, cv2.COLOR_BGR2GRAY)
+template_image = template_image[region_a[1]:region_b[1], region_a[0]:region_b[0]]
+cv2.imshow('template', template_image)
 
 fps = 15.
 
@@ -29,8 +75,6 @@ time_buffer = []
 
 # The length of the frame buffer in frames.
 frame_buffer_length = 10
-
-frame_size = (640, 480)
 
 # Video writer used to save files.
 out = None

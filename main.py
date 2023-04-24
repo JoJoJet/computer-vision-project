@@ -2,9 +2,13 @@ import numpy as np
 import cv2
 from datetime import datetime
 from nms import non_max_suppression
+from sift import get_sift_matches
 
 hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+
+sift = cv2.SIFT_create(400)
+template_image = cv2.imread('template_image.jpg')
 
 cv2.startWindowThread()
 
@@ -82,6 +86,8 @@ while(True):
     # This is mainly just to ensure that non-max suppression works.
     for (x1, y1, x2, y2) in suppressed:
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 50, 0), 2)
+    
+    get_sift_matches(sift, frame, template_image)
     
     match current_state:
         case State.SCAN:

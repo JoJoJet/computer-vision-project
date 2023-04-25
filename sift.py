@@ -4,12 +4,12 @@ def get_sift_matches(sift, image, template_image):
     kp1, des1 = sift.detectAndCompute(image, None)
     kp2, des2 = sift.detectAndCompute(template_image, None)
     
-    FLANN_INDEX_KDTREE = 1
-    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees = 5)
-    search_params = dict(checks=50)
+    # Exit early if the template has no keypoints to match on.
+    if len(kp2) == 0:
+        return False, []
     
-    flann = cv2.FlannBasedMatcher(index_params, search_params)
-    matches = flann.knnMatch(des1, des2, k=2)
+    matcher = cv2.BFMatcher()
+    matches = matcher.knnMatch(des1, des2, k=2)
     
     matchesMask = [[0,0] for i in range(len(matches))]
     for i,(m,n) in enumerate(matches):

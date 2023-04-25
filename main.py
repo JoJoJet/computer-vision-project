@@ -61,7 +61,6 @@ region_a, region_b = order_points(region_a, region_b)
 _, template_image = cap.read()
 template_image = cv2.cvtColor(template_image, cv2.COLOR_BGR2GRAY)
 template_image = template_image[region_a[1]:region_b[1], region_a[0]:region_b[0]]
-cv2.imshow('template', template_image)
 
 fps = 15.
 

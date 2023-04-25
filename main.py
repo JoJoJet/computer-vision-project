@@ -133,7 +133,9 @@ while(True):
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 50, 0), 2)
     
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    get_sift_matches(sift, gray_frame, template_image)
+    bike_present, matched_points = get_sift_matches(sift, gray_frame, template_image)
+    if bike_present:
+        frame = cv2.drawKeypoints(frame, matched_points, 0, (0,255,0), flags=cv2.DRAW_MATCHES_FLAGS_DEFAULT)
     
     match current_state:
         case State.SCAN:

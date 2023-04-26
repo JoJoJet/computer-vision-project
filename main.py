@@ -58,9 +58,15 @@ assert(region_b != None)
 region_a, region_b = order_points(region_a, region_b)
 
 # Find a template image by cropping out the region the user selected.
-_, template_image = cap.read()
-template_image = cv2.cvtColor(template_image, cv2.COLOR_BGR2GRAY)
-template_image = template_image[region_a[1]:region_b[1], region_a[0]:region_b[0]]
+_, frame = cap.read()
+frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+template_image = frame[region_a[1]:region_b[1], region_a[0]:region_b[0]]
+
+# The number of matches we should expect to get when running SIFT
+# on the original frame that the template image was captured from.
+expected_matches = len(get_sift_matches(sift, frame, template_image))
+match_threshold = max(int(expected_matches*0.7),min(1, expected_matches))
+print('Expected matches: ', expected_matches)
 
 fps = 15.
 
@@ -132,8 +138,8 @@ while(True):
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 50, 0), 2)
     
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    bike_present, matched_points = get_sift_matches(sift, gray_frame, template_image)
-    if bike_present:
+    matched_points = get_sift_matches(sift, gray_frame, template_image)
+    if len(matched_points) >= match_threshold:
         frame = cv2.drawKeypoints(frame, matched_points, 0, (0,255,0), flags=cv2.DRAW_MATCHES_FLAGS_DEFAULT)
     
     match current_state:

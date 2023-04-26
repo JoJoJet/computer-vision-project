@@ -25,6 +25,4 @@ def get_sift_matches(sift, image, template_image):
     img3 = cv2.drawMatchesKnn(image,kp1,template_image,kp2,matches,None,**draw_params)
     cv2.imshow('sift',img3)
     
-    is_good_match = len(matched_points) >= len(kp2) / 2
-    
-    return is_good_match, matched_points
+    return matched_points

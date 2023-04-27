@@ -32,7 +32,7 @@ def get_sift_matches(sift, image, template_image, template_keypoints, template_d
     # two nearest bins in each dimension.
     # Theta should be measured in degrees.
     def into_bins(x, y, s, theta):
-        loc_bin_size = 100;
+        loc_bin_size = 50;
         x1 = floor(x / loc_bin_size) * loc_bin_size
         x2 = ceil(x / loc_bin_size) * loc_bin_size
         y1 = floor(y / loc_bin_size) * loc_bin_size

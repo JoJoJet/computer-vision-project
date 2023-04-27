@@ -21,11 +21,11 @@ def get_sift_matches(sift, image, template_image):
             matchesMask[i] = [1,0]
             good_matches.append((kp1[m.queryIdx], kp2[m.trainIdx]))
     
-    draw_params = dict(matchColor=(0,255,0),
-                        singlePointColor=(245,0,0),
-                        matchesMask=matchesMask,
-                        flags=cv2.DrawMatchesFlags_DEFAULT)
-    img3 = cv2.drawMatchesKnn(image,kp1,template_image,kp2,matches,None,**draw_params)
+    img3 = cv2.drawMatchesKnn(image,kp1,template_image,kp2,matches,None,
+                            matchColor=(0,255,0),
+                            singlePointColor=(245,0,0),
+                            matchesMask=matchesMask,
+                            flags=cv2.DrawMatchesFlags_DEFAULT)
     cv2.imshow('sift',img3)
         
     if len(good_matches) == 0:

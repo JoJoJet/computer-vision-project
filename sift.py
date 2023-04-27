@@ -57,5 +57,11 @@ def get_sift_matches(sift, image, template_image):
     # Find the bin with the most votes.
     best_bin = max(hough, key = lambda k: len(hough[k]))
     matched_points = [good_matches[i][0] for i in hough[best_bin]]
-        
-    return matched_points
+    
+    # The number of matches that need to fall into the maximum bin
+    # in order for us to recognize an object.
+    match_threshold = min(2, len(kp2))
+    if len(matched_points) >= match_threshold:
+        return matched_points
+    else:
+        return []

@@ -76,6 +76,10 @@ time_buffer = []
 # The length of the frame buffer in frames.
 frame_buffer_length = 10
 
+# Whether or not old frames should be removed from the buffer
+# when it exceeds `frame_buffer_length`.
+do_flush_buffer = True
+
 # Video writer used to save files.
 out = None
     
@@ -134,6 +138,8 @@ while(True):
     
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     matched_points = get_sift_matches(sift, gray_frame, template_image, template_keypoints, template_descriptors)
+    do_flush_buffer = len(matched_points) > 0
+    
     frame = cv2.drawKeypoints(frame, matched_points, 0, (0,255,0), flags=cv2.DRAW_MATCHES_FLAGS_DEFAULT)
     
     match current_state:
@@ -162,7 +168,7 @@ while(True):
                 time_buffer.clear()
                 
             # Remove old frames from the buffer.
-            while len(time_buffer) > 0 and (now - time_buffer[0]).seconds > 10:
+            while do_flush_buffer and len(time_buffer) > 0 and (now - time_buffer[0]).seconds > 10:
                 print("Removing an old frame...")
                 frame_buffer.pop(0)
                 time_buffer.pop(0)

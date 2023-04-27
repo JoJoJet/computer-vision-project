@@ -58,6 +58,5 @@ def get_sift_matches(sift, image, template_image):
     # Find the bin with the most votes.
     best_bin = max(hough, key = lambda k: len(hough[k]))
     matched_points = [good_matches[i][0] for i in hough[best_bin]]
-    print('matched ', len(matched_points), ' points')
         
     return matched_points

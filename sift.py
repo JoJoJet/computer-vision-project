@@ -5,7 +5,6 @@ from itertools import product
 def get_sift_matches(sift, image, template_image):
     kp1, des1 = sift.detectAndCompute(image, None)
     kp2, des2 = sift.detectAndCompute(template_image, None)
-    print(des1)
     
     # Exit early if the template has no keypoints to match on.
     if len(kp2) == 0:

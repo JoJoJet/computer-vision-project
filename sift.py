@@ -70,7 +70,7 @@ def get_sift_matches(sift, image, template_image, template_keypoints, template_d
     
     # The number of matches that need to fall into the maximum bin
     # in order for us to recognize an object.
-    match_threshold = min(2, len(kp2))
+    match_threshold = min(3, len(kp2))
     if len(matched_points) >= match_threshold:
         return matched_points
     else:

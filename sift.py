@@ -10,9 +10,7 @@ def get_sift_matches(sift, image, template_image):
     if len(kp2) == 0:
         return []
     
-    matcher = cv2.BFMatcher()
-    matches = matcher.knnMatch(des1, des2, k=2)
-    
+    matches = cv2.BFMatcher().knnMatch(des1, des2, k=2)
     good_matches = []
     matchesMask = [[0,0] for i in range(len(matches))]
     for i,(m,n) in enumerate(matches):

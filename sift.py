@@ -2,9 +2,9 @@ import cv2
 from math import log2, floor, ceil
 from itertools import product
 
-def get_sift_matches(sift, image, template_image):
+def get_sift_matches(sift, image, template_image, template_keypoints, template_descriptors):
     kp1, des1 = sift.detectAndCompute(image, None)
-    kp2, des2 = sift.detectAndCompute(template_image, None)
+    kp2, des2 = (template_keypoints, template_descriptors)
     
     # Exit early if the template has no keypoints to match on.
     if len(kp2) == 0:

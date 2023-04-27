@@ -6,7 +6,7 @@ def get_sift_matches(sift, image, template_image):
     
     # Exit early if the template has no keypoints to match on.
     if len(kp2) == 0:
-        return False, []
+        return []
     
     matcher = cv2.BFMatcher()
     matches = matcher.knnMatch(des1, des2, k=2)

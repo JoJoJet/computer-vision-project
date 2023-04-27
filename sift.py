@@ -32,14 +32,16 @@ def get_sift_matches(sift, image, template_image):
     # two nearest bins in each dimension.
     # Theta should be measured in degrees.
     def into_bins(x, y, s, theta):
-        x1 = floor(x / 100) * 100
-        x2 = ceil(x / 100) * 100
-        y1 = floor(y / 100) * 100
-        y2 = ceil(y / 100) * 100
+        loc_bin_size = 100;
+        ang_bin_size = 30;
+        x1 = floor(x / loc_bin_size) * loc_bin_size
+        x2 = ceil(x / loc_bin_size) * loc_bin_size
+        y1 = floor(y / loc_bin_size) * loc_bin_size
+        y2 = ceil(y / loc_bin_size) * loc_bin_size
         s1 = 2**(floor(log2(s)))
         s2 = 2**(ceil(log2(s)))
-        theta1 = floor(theta / 30) * 30
-        theta2 = ceil(theta / 30) * 30
+        theta1 = floor(theta / ang_bin_size) * ang_bin_size
+        theta2 = ceil(theta / ang_bin_size) * ang_bin_size
         return [x1, x2], [y1, y2], [s1, s2], [theta1, theta2]
     
     # For each matched feature, vote for its nearby hough bins.

@@ -63,6 +63,9 @@ frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 template_image = frame[region_a[1]:region_b[1], region_a[0]:region_b[0]]
 template_keypoints, template_descriptors = sift.detectAndCompute(template_image, None)
 
+last_saw_template = datetime.now()
+last_alerted_template = None
+
 fps = 15.
 
 # Stores past frames for a short period of time.
@@ -102,6 +105,8 @@ entered_lost = None
 current_state = State.SCAN
     
 while(True):
+    now = datetime.now()
+    
     # Capture the next frame from the webcam.
     ret, frame = cap.read()
 
@@ -138,13 +143,36 @@ while(True):
     
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     matched_points = get_sift_matches(sift, gray_frame, template_image, template_keypoints, template_descriptors)
-    do_flush_buffer = len(matched_points) > 0
+    if len(matched_points) > 0:
+        last_saw_template = now
+        do_flush_buffer = True
+    else:
+        do_flush_buffer = False
+        needs_alerting = last_alerted_template == None or last_saw_template > last_alerted_template
+        if needs_alerting and (now - last_saw_template).seconds >= 1:
+            current_state = State.ALERT
+            last_alerted_template = now
+            
+            # Start a recording. Save the current frame buffer,
+            # to give the recording more context when viewed.
+            out = start_recording(now, frame_size, fps)
+            for frame in frame_buffer:
+                out.write(frame.astype('uint8'))
+            frame_buffer.clear()
+            time_buffer.clear()
     
     frame = cv2.drawKeypoints(frame, matched_points, 0, (0,255,0), flags=cv2.DRAW_MATCHES_FLAGS_DEFAULT)
     
+    def start_recording(timestamp, frame_size, fps):
+        return cv2.VideoWriter(
+            now.strftime("Recording-%d-%m-%y--%H-%M-%S.avi"),
+            cv2.VideoWriter_fourcc(*'MJPG'),
+            fps,
+            frame_size)
+        
+    
     match current_state:
         case State.SCAN:
-            now = datetime.now()
         
             # Add the current frame to the buffer.
             frame_buffer.append(frame)
@@ -156,12 +184,7 @@ while(True):
                 
                 # Start a recording. Save the current frame buffer,
                 # to give the recording more context when viewed.
-                file_name = now.strftime("Recording-%d-%m-%y--%H-%M-%S.avi")
-                out = cv2.VideoWriter(
-                    file_name,
-                    cv2.VideoWriter_fourcc(*'MJPG'),
-                    fps,
-                    frame_size)
+                out = start_recording(now, frame_size, fps)
                 for frame in frame_buffer:
                     out.write(frame.astype('uint8'))
                 frame_buffer.clear()
